@@ -5,9 +5,10 @@ PKG_NAME ?= $(subst go-,,$(shell basename `pwd`))
 PREFIX := .
 GO111MODULE := on
 GOFLAGS := -mod=vendor
+CGO_ENABLED := 0
 DOCKER_BUILDKIT ?= 1
 
-DOCKER_REPO ?= hairyhenderson/$(PKG_NAME)
+DOCKER_REPO ?= hairyhenderson/go-which
 DOCKER_TAG ?= latest
 
 ifeq ("$(CI)","true")
@@ -29,12 +30,11 @@ GOARCH ?= $(shell go version | sed 's/^.*\ \([a-z0-9]*\)\/\([a-z0-9]*\)/\2/')
 
 platforms := linux-amd64 linux-arm linux-arm64 darwin-amd64 windows-amd64.exe
 compressed-platforms := linux-amd64-slim linux-arm-slim linux-arm64-slim darwin-amd64-slim windows-amd64-slim.exe
-# platforms := linux-amd64
-# compressed-platforms := linux-amd64-slim
 
 clean:
-	rm -Rf $(PREFIX)/bin/*
-	rm -f $(PREFIX)/*.[ci]id
+	-rm -Rf $(PREFIX)/bin/*
+	-rm -f $(PREFIX)/*.tag
+	-rm -f $(PREFIX)/*.[ci]id
 
 build-x: $(patsubst %,$(PREFIX)/bin/$(PKG_NAME)_%,$(platforms))
 
@@ -64,6 +64,7 @@ compress: $(PREFIX)/bin/$(PKG_NAME)_$(GOOS)-$(GOARCH)-slim$(call extension,$(GOO
 
 %.iid: Dockerfile
 	@docker build \
+		--progress=plain \
 		--build-arg VCS_REF=$(COMMIT) \
 		--build-arg CODEOWNERS="$(shell grep `dirname $@` .github/CODEOWNERS | cut -f2)" \
 		--build-arg VERSION=$(VERSION) \
@@ -110,7 +111,7 @@ build: $(PREFIX)/bin/$(PKG_NAME)$(call extension,$(GOOS))
 test:
 	$(GO) test -v -race -coverprofile=c.out ./...
 
-integration: ./bin/$(PKG)
+integration: ./bin/$(PKG_NAME)$(call extension,$(GOOS))
 	$(GO) test -v -tags=integration \
 		./internal/tests/integration -check.v
 
