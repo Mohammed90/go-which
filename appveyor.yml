@@ -10,8 +10,9 @@ init:
   - git config --global core.autocrlf input
 
 install:
-  - set 
-  - set PATH=%GOPATH%\bin;c:\go\bin;C:\msys64\usr\local\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
+  # - set 
+  # - set PATH=%GOPATH%\bin;c:\go\bin;C:\msys64\usr\local\bin;C:\msys64\usr\bin;C:\msys64\bin;%PATH%
+  - set PATH=%GOPATH%\bin;c:\go\bin;%PATH%
   - go version
 
 build_script:
